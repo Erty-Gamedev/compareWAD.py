@@ -1,7 +1,7 @@
 import sys
 import filecmp
 from pathlib import Path
-from wad3_reader import Wad3Reader
+from wad3_reader import Wad3Reader, InvalidFormatException
 import consolestyling as cs
 
 __version__ = '1.0.0'
@@ -50,6 +50,15 @@ def handle_args() -> tuple[Path, Path]:
 
     return left, right
 
+def read_wad(filepath: Path) -> Wad3Reader:
+    try:
+        reader = Wad3Reader(filepath)
+    except InvalidFormatException as e:
+        exit_error(str(e))
+    except Exception as e:
+        exit_error(f"Error reading '{filepath.resolve()}': {e}")
+    return reader
+
 
 if __name__ == "__main__":
     left, right = handle_args()
@@ -58,8 +67,8 @@ if __name__ == "__main__":
         print(cs.styleWarning("The files are identical"))
         exit(0)
 
-    left_r = Wad3Reader(left)
-    right_r = Wad3Reader(right)
+    left_r = read_wad(left)
+    right_r = read_wad(right)
 
     left_set = set(left_r.entries.keys())
     right_set = set(right_r.entries.keys())
